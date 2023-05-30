@@ -21,28 +21,30 @@ function App() {
 
   // function to fetch repositories
   const fetchRepositories = async () => {
-    // while api is loading
-    setIsLoading(true);
-    try {
-      const response = await fetch(`https://api.github.com/orgs/${search}/repos`);
-      const data = await response.json();
-      // if response is ok, sort the data by stars and setRepositories
-      if (response.ok) {
-        const sortedData = data.sort(
-          (a, b) => b.stargazers_count - a.stargazers_count
-        );
-        setRepositories(sortedData);
-      } else {
-        // if response is not okay, setRepositories to empty
-        setRepositories([]);
-      }
-    } catch (error) {
-      console.log("Error fetching repositories:", error);
+  if (search === "") {
+    // If search is empty, set repositories to an empty array and return
+    setRepositories([]);
+    return;
+  }
+
+  setIsLoading(true);
+  try {
+    const response = await fetch(`https://api.github.com/orgs/${search}/repos`);
+    const data = await response.json();
+    if (response.ok) {
+      const sortedData = data.sort(
+        (a, b) => b.stargazers_count - a.stargazers_count
+      );
+      setRepositories(sortedData);
+    } else {
       setRepositories([]);
     }
-    // after function is done, set loading to false;
-    setIsLoading(false);
-  };
+  } catch (error) {
+    console.log("Error fetching repositories:", error);
+    setRepositories([]);
+  }
+  setIsLoading(false);
+};
 
   // function to fetch commits
   const fetchCommits = async (orgName, repoName) => {
@@ -53,7 +55,6 @@ function App() {
         `https://api.github.com/repos/${orgName}/${repoName}/commits`
       );
       const data = await response.json();
-      console.log(data)
       const sortedData = data.sort(
         (a, b) =>
           new Date(b.commit.committer.date) - new Date(a.commit.committer.date)
